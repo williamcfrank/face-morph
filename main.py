@@ -475,15 +475,15 @@ if __name__ == "__main__":
     print("Finished with creating gif.")
 
     # Calculate Mean Face of a population
-    mean_face = population_text_parser()
-    plt.imsave("mean_danish_face_with_me.png", mean_face)
+    # mean_face = population_text_parser()
+    # plt.imsave("mean_danish_face_with_me.png", mean_face)
 
-    # Make Caricatures
-    c0 = makeCaricature(-.5)
-    c1 = makeCaricature(.5)
-    plt.imsave("caricature0_1.png", c0)
-    plt.imsave("caricature1_1.png", c1)
+    # # Make Caricatures
+    # c0 = makeCaricature(-.5)
+    # c1 = makeCaricature(.5)
+    # plt.imsave("caricature0_1.png", c0)
+    # plt.imsave("caricature1_1.png", c1)
 
-    # Bells and WhistleAttributeError
-    bw = makeMaleFemale()
-    plt.imsave("bells_and_whistle.png", bw)
+    # # Bells and WhistleAttributeError
+    # bw = makeMaleFemale()
+    # plt.imsave("bells_and_whistle.png", bw)
