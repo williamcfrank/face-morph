@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<head>
+  <title>CS194-26 Proj4</title>
+  <!-- <link rel="StyleSheet" href="../style.css" type="text/css" media="all" /> -->
+
+  <style type="text/css">
+  <!--
+  body {
+  	background: #00000;
+  	margin: 0;
+  	padding: 0;
+  	color: #000;
+  	font-family: Helvetica, Verdana, Arial, sans-serif;
+  	font-size: 11pt;
+  	font-style: normal;
+  	line-height: 1.4;
+  }
+
+  /* ~~ Element/tag selectors ~~ */
+  ul, ol, dl { /* Due to variations between browsers, it's best practices to zero padding and margin on lists. For consistency, you can either specify the amounts you want here, or on the list items (LI, DT, DD) they contain. Remember that what you do here will cascade to the .nav list unless you write a more specific selector. */
+  	padding: 0;
+  	margin: 0;
+  }
+  h1, h2, h3, h4, h5, h6, p {
+  	margin-top: 0;	 /* removing the top margin gets around an issue where margins can escape from their containing div. The remaining bottom margin will hold it away from any elements that follow. */
+  	padding-right: 15px;
+  	padding-left: 15px; /* adding the padding to the sides of the elements within the divs, instead of the divs themselves, gets rid of any box model math. A nested div with side padding can also be used as an alternate method. */
+  }
+  a img { /* this selector removes the default blue border displayed in some browsers around an image when it is surrounded by a link */
+  	border: none;
+  }
+  /* ~~ Styling for your site's links must remain in this order - including the group of selectors that create the hover effect. ~~ */
+  a:link {
+  	color: #42413C;
+  	text-decoration: underline; /* unless you style your links to look extremely unique, it's best to provide underlines for quick visual identification */
+  }
+  a:visited {
+  	color: #6E6C64;
+  	text-decoration: underline;
+  }
+  a:hover, a:active, a:focus { /* this group of selectors will give a keyboard navigator the same hover experience as the person using a mouse. */
+  	text-decoration: none;
+  }
+
+  /* ~~ this fixed width container surrounds all other elements ~~ */
+  .container {
+  	width: 960px;
+  	background: #FFF;
+  	margin: 0 auto; /* the auto value on the sides, coupled with the width, centers the layout */
+  }
+
+  /* ~~ This is the layout information. ~~
+
+  1) Padding is only placed on the top and/or bottom of the div. The elements within this div have padding on their sides. This saves you from any "box model math". Keep in mind, if you add any side padding or border to the div itself, it will be added to the width you define to create the *total* width. You may also choose to remove the padding on the element in the div and place a second div within it with no width and the padding necessary for your design.
+
+  */
+  .content {
+
+  	padding: 10px 0;
+  }
+
+  /* ~~ miscellaneous float/clear classes ~~ */
+  .fltrt {  /* this class can be used to float an element right in your page. The floated element must precede the element it should be next to on the page. */
+  	float: right;
+  	margin-left: 8px;
+  }
+  .fltlft { /* this class can be used to float an element left in your page. The floated element must precede the element it should be next to on the page. */
+  	float: left;
+  	margin-right: 8px;
+  }
+  .clearfloat { /* this class can be placed on a <br /> or empty div as the final element following the last floated div (within the #container) if the overflow:hidden on the .container is removed */
+  	clear:both;
+  	height:0;
+  	font-size: 1px;
+  	line-height: 0px;
+  }
+  -->
+</style>
+</head>
+<body>
+  <h1>
+    William Choe <br />
+    CS194-26 Proj4
+  </h1>
+  <h2>
+    Face Morphing <br>
+  </h2>
+
+  <h3>Overview</h3>
+    <p>
+    In the this project, we created a visual morph between two faces. We achieve this
+    by warping the shape of the imagaes and by cross dissolving the images for color.
+    To do this, you first need to define "corrispondence points" on both faces that represents
+    key features of each person such as eyes, mouth, nose, forehead shape, etc. <br>
+    <br />
+    Along with the above, we computed the "mean" face of a population, and I included
+    my own face to the mean set, and applied the features of the mean set to my own face.
+    I also used this "mean" face to make carricatures of myself, and tried to change
+    the gender of the subject of a photo.<br />
+    <br />
+    More details of the process used to achieve each are in the parts' respective
+    sections.
+    <br />
+    </p>
+
+  <h3>Defining Correspondences</h3>
+    <p>
+    First, we need to identify key points of each picture. It's important to choose
+    a lot of points around facial features we (humans) tend to use to identify
+    faces such as the eyes, mouth, chin, etc. For this warp, I chose myself, and
+    my friend.  I used approximately 40 points. <br />
+    <br />
+    </p>
+
+    Here is the image of myself. <br />
+    <img src="images/will.jpg" alt="will" width=500 />
+    <br />
+    Here is the image of my friend <br />
+    <img src="images/emilie.jpg" alt="emilie" width=500 />
+    <br />
+    These are our faces with the corrispondence points I selected <br>
+    <img src="images/will_marked.jpg" alt="will_marked" width=500>
+    <br />
+    <br />
+    Delauny Triangulations <br />
+    <img src="images/dt0.png" alt="will tri" width=500>
+    <img src="images/dt1.png" alt="emilie tri" width=500>
+
+
+  <h3>Computing the "Mid-way Face"</h3>
+    <p>
+    After defining correspondence points, we can compute the "mid-way" of the two
+    faces. This is done in 3 steps. <br />
+    <br />
+    1) Compute the average shape <br />
+    The average shape of 2 images is their x,y coordinates divided by 2 and added
+    together i.e. avergae_shape[y,x] = imA[y,x] * (1/2) + imB[y,x] * (1/2) <br />
+    <br />
+    2) Warping both faces into that shape i.e. create warp from imA --> mid and imB --> mid <br />
+    <br />
+    First, I used the average shape point set to create a Delaunay triangulation over the entire image.
+    To make sure every point in the image is located a triangle, I added the
+    corners of the image to my average point set.  Now I can start to compute the warp
+    from imA --> mid and imB to mid. For a given warp (let's say imA --> mid)
+    for each triangle, I computed an Affine transformation matrix that maps
+    point transformation from imA --> mid. Ax = x' where A is the Affine matrix,
+    x is a vector of points in im1, and x' is a vector of points in im2. Then,
+    I used inverse warping using inverse of A for every x,y coordinate of my image
+    to determine where to map all points of imA to this warp.  I repeated the
+    above to calculate my 2nd warp of imB --> mid. <br />
+    <br />
+    3) Averaging the colors together <br />
+    <br />
+    For both of my warps, warpA and warpB, I cross-disolved the images using a
+    weight of 1/2. midway = warpA * (1/2) + warpB * (1/2) <br />
+    </p>
+
+    <br />
+    Me <br />
+    <img src="images/will.jpg" alt="will" width=500 />
+    <br />
+    Midway Face <br />
+    <img src="images/midway_will_emilie.png" alt="will and emilie mid" width=500>
+    <br />
+    My friend <br />
+    <img src="images/emilie.jpg" alt="emilie" width=500 />
+    <br />
+    <br />
+    Note: Looking back I sholdn't have worn my glasses because it creates a
+    ghosting effect where the midway image looks like they're transparent (like a ghost)
+    <br />
+    <br />
+
+  <h3>The Morph Sequence</h3>
+    <p>
+    The process of creating a morph between imA and imB is essentially using the
+    same process as creating the mid-way face, just doing it multiple times while
+    changing certain weights and values.  First, we generalize computing the
+    average shape.  Instead of half of each image, we want (1 - i/45) of one
+    image and i/45 of the other image.  Second, we generalize the crossdisolving.
+    Instead of just 1/2 of the color of each image, we again want (1-i/45) of
+    one image and 1/45 of the other image where i is in range from 0 to the number
+    of frames we want, which is 45. <br />
+    </p>
+
+    <br />
+    Here is the morph sequence between me and my friend. <br />
+    <img src="images/will_emilie_gif.gif" alt="my gif" width=500 />
+
+  <h3>The "Mean face" of a population</h3>
+    <p>
+    Using a dataset of 37 Danish people, and predefined corrispondence points,
+    we can compute the "mean face" of a Dane. To compute the "mean Dane",
+    we first compute the average_shape of the Danes by adding all the
+    corrispondence points and then dividing by the number of faces in our data set.
+    Once we have the mean shape, we can morph each face into our poplution into
+    the average shape. Once we compute all the average shapes for all the Danes,
+    we can add them all together, and divide by the total number of faces to get
+    the "average Danish face." <br />
+    </p>
+
+    <br />
+    "Average Danish" face <br />
+    <img src="images/mean_danish_face.png" alt="mean danes" width=500 />
+    <br />
+    Original Danish Image 1 <br />
+    <img src="images/danish_org1.bmp" alt="org danish person1" width=500 />
+    <br />
+    Morphed into the average shape <br />
+    <img src="images/danish_into_mean_1.png" alt="morph danish person1" width=500 />
+    <br />
+    Original Danish Image 2 <br />
+    <img src="images/danish_org4.bmp" alt="org danish person2" width=500 />
+    <br />
+    Morphed into the average shape <br />
+    <img src="images/danish_into_mean_4.png" alt="morph danish person2" width=500 />
+    <br />
+    Me <br />
+    <img src="images/will_population.jpeg" alt="will org pop" width=500 />
+    <br />
+    Myself morphed into the "Average Danish" face shape <br />
+    <img src="images/will_in_danish_pop.png" alt="will is danish?" width=500 />
+    <br />
+    The average Danish face warp with my face in it as well <br />
+    <img src="images/mean_danish_face_with_me.png" alt="mean_danish_face_with_me" width=500 />
+    <br />
+    I guess the average Danish person smiles (or at least naturally smirks) b/c
+    my original face was neutral, and now I have a smirk once I become Danish.
+    <br />
+    <br />
+
+  <h3>Caricatures: Extrapolating from the mean</h3>
+    <p>
+    I can make a caricature of myself by taking the difference of my face
+    corrispondece points (my face shape) with the average Danish face shape,
+    and then multiply it by a weight t, and then add that product to the
+    average Danish face to get a carricature of myself. <br />
+    </p>
+
+    <br />
+    c = (image_me_corr - avg_dane_corr) * w + avg_dane_corr<br />
+    <br />
+    Set w:=-.5 <br />
+    <img src="images/caricature0_1.png" alt="caricature0_1" width=500 />
+    <br />
+    Set w:=.5 <br />
+    <img src="images/caricature1_1.png" alt="caricature1_1" width=500 />
+    <br />
+    <br />
+    Setting w > 0 decreases the overall size of my face while setting w < 0
+    greatly exagerates the size of face.
+
+  <h3>Bells and Whistles #1 </h3>
+    <p>
+    I got the mean female Danish face set and I can use this to "change the gender"
+    of my face. <br />
+    </p>
+
+    <br />
+    "Average Female" Face <br />
+    <img src="images/average_female.jpg" alt="avg female face" width=500 />
+    <br />
+    Me <br />
+    <img src="images/will_population.jpeg" alt="will org pop" width=500 />
+    <br />
+    Me with "feminine" traits <br />
+    <img src="images/bells_and_whistle.png" alt="female will" width=500 />
+    <br />
+    <p>
+    I mean, beauty is in the eye of the beholder, right? But seriously, you
+    can see that certain traits have blended to become more like the average
+    female img avg above, like my very round face has become a little more slender,
+    along with my eyes.  Also my skin has become more "fair". It's not perfect,
+    but there's only so much an image can do to me.
+    </p>
+
+</body>
+</html>
